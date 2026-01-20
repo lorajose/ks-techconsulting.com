@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/oblm9wnyeimr/ks-techconsulting.com/
+    - /bin/rsync -av --delete --exclude '.git' /home/oblm9wnyeimr/repositories/KS-TechConsulting/ $DEPLOYPATH
