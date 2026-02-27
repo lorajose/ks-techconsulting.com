@@ -154,6 +154,15 @@ h6,
     color: var(--light);
 }
 
+.hero-lead-card {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.hero-lead-card .form-control,
+.hero-lead-card .form-select {
+    min-height: 46px;
+}
+
 
 /*** Section Title ***/
 .section-title::before {
@@ -251,9 +260,37 @@ h6,
     transition: .5s;
 }
 
+.service-item .service-list {
+    margin: 0 0 1rem 0;
+    padding-left: 1.2rem;
+}
+
+.service-item .service-list li {
+    margin-bottom: .35rem;
+    color: #6c757d;
+    transition: .5s;
+}
+
+.service-item .service-benefit {
+    font-weight: 600;
+    color: var(--dark);
+}
+
 .service-item:hover h5,
 .service-item:hover p {
     color: #FFFFFF;
+}
+
+.service-item:hover .service-list li,
+.service-item:hover .service-benefit {
+    color: #FFFFFF;
+}
+
+.service-lead-form {
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
 }
 
 .service-item a.btn {

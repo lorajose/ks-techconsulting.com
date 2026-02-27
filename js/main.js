@@ -60,6 +60,35 @@
             '<i class="bi bi-chevron-right"></i>'
         ]
     });
+
+    // Lead magnet modal (only once per browser session)
+    var leadMagnetModal = document.getElementById('leadMagnetModal');
+    var canUseSessionStorage = false;
+
+    try {
+        canUseSessionStorage = !!window.sessionStorage;
+    } catch (e) {
+        canUseSessionStorage = false;
+    }
+
+    var hasSeenLeadMagnet = canUseSessionStorage && sessionStorage.getItem('leadMagnetShown');
+
+    if (leadMagnetModal && window.bootstrap && !hasSeenLeadMagnet) {
+        var leadMagnetInstance = new bootstrap.Modal(leadMagnetModal);
+
+        setTimeout(function () {
+            leadMagnetInstance.show();
+            if (canUseSessionStorage) {
+                sessionStorage.setItem('leadMagnetShown', 'true');
+            }
+        }, 8000);
+
+        leadMagnetModal.addEventListener('hidden.bs.modal', function () {
+            if (canUseSessionStorage) {
+                sessionStorage.setItem('leadMagnetShown', 'true');
+            }
+        });
+    }
     
 })(jQuery);
 
