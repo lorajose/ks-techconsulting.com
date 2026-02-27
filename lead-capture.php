@@ -2,8 +2,10 @@
 declare(strict_types=1);
 
 $recipientEmail = 'klora@ks-techconsulting.com';
+$senderEmail = 'klora@ks-techconsulting.com';
 $defaultReturnUrl = 'index.html';
 $siteName = 'KS Tech Consulting';
+$logFilePath = __DIR__ . DIRECTORY_SEPARATOR . 'lead-capture-submissions.log';
 
 $fieldLabels = [
     'form_name' => 'Form Name',
@@ -64,6 +66,17 @@ function normalizeReturnUrl(?string $value, string $fallback): string
     }
 
     return $candidate;
+}
+
+function appendSubmissionLog(string $path, string $subject, string $body): bool
+{
+    $entry = str_repeat('=', 72) . "\r\n";
+    $entry .= 'Logged At: ' . date('c') . "\r\n";
+    $entry .= 'Subject: ' . $subject . "\r\n\r\n";
+    $entry .= $body;
+    $entry .= "\r\n";
+
+    return @file_put_contents($path, $entry, FILE_APPEND | LOCK_EX) !== false;
 }
 
 function renderStatusPage(
@@ -252,19 +265,32 @@ $emailBody = implode("\r\n", $messageLines) . "\r\n";
 $headers = [
     'MIME-Version: 1.0',
     'Content-Type: text/plain; charset=UTF-8',
-    'From: KS Tech Consulting <noreply@ks-techconsulting.com>',
+    'From: ' . $siteName . ' <' . $senderEmail . '>',
+    'Sender: ' . $senderEmail,
     'Reply-To: ' . $name . ' <' . $email . '>',
     'X-Mailer: PHP/' . PHP_VERSION,
 ];
 
-$emailSent = @mail($recipientEmail, $emailSubject, $emailBody, implode("\r\n", $headers));
+$submissionLogged = appendSubmissionLog($logFilePath, $emailSubject, $emailBody);
+$emailSent = @mail($recipientEmail, $emailSubject, $emailBody, implode("\r\n", $headers), '-f' . $senderEmail);
 
-if (!$emailSent) {
+if (!$emailSent && !$submissionLogged) {
     renderStatusPage(
         'error',
         'The Server Could Not Send Your Request',
-        'The form data was validated, but the hosting server did not complete the email handoff. Please try again or contact us directly.',
-        ['Recipient: ' . $recipientEmail, 'Form: ' . $formName],
+        'The form data was validated, but the hosting server did not complete the email handoff or local lead logging. Please contact us directly.',
+        ['Recipient: ' . $recipientEmail, 'Form: ' . $formName, 'Server Log: Unavailable'],
+        $returnUrl
+    );
+    exit;
+}
+
+if (!$emailSent && $submissionLogged) {
+    renderStatusPage(
+        'info',
+        'Your Request Was Recorded',
+        'The form was saved on the server, but email delivery from the hosting environment needs attention. KS can still retrieve your request from the server log.',
+        ['Recipient: ' . $recipientEmail, 'Form: ' . $formName, 'Server Log: Saved'],
         $returnUrl
     );
     exit;
@@ -272,12 +298,13 @@ if (!$emailSent) {
 
 renderStatusPage(
     'success',
-    'Your Consultation Request Was Sent',
-    'Thank you. We received your request and routed it to the KS Tech Consulting team for review.',
+    'Your Consultation Request Was Submitted',
+    'Thank you. We received your request, saved it on the server, and handed it to the mail system for delivery.',
     [
         'Recipient: ' . $recipientEmail,
         'Form: ' . $formName,
         'Primary Interest: ' . ($subjectContext !== '' ? $subjectContext : 'General Inquiry'),
+        'Server Log: ' . ($submissionLogged ? 'Saved' : 'Unavailable'),
     ],
     $returnUrl
 );
