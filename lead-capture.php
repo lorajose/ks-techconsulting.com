@@ -5,7 +5,9 @@ $recipientEmail = 'klora@ks-techconsulting.com';
 $senderEmail = 'klora@ks-techconsulting.com';
 $defaultReturnUrl = 'index.html';
 $siteName = 'KS Tech Consulting';
-$logFilePath = __DIR__ . DIRECTORY_SEPARATOR . 'lead-capture-submissions.log';
+// Keep submitted contact details outside the publicly served document root.
+$privateLogDirectory = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'ks-leads';
+$logFilePath = $privateLogDirectory . DIRECTORY_SEPARATOR . 'lead-capture-submissions.log';
 
 $fieldLabels = [
     'form_name' => 'Form Name',
@@ -70,13 +72,24 @@ function normalizeReturnUrl(?string $value, string $fallback): string
 
 function appendSubmissionLog(string $path, string $subject, string $body): bool
 {
+    $directory = dirname($path);
+    if (!is_dir($directory) && !@mkdir($directory, 0700, true)) {
+        return false;
+    }
+    if (!is_writable($directory)) {
+        return false;
+    }
     $entry = str_repeat('=', 72) . "\r\n";
     $entry .= 'Logged At: ' . date('c') . "\r\n";
     $entry .= 'Subject: ' . $subject . "\r\n\r\n";
     $entry .= $body;
     $entry .= "\r\n";
 
-    return @file_put_contents($path, $entry, FILE_APPEND | LOCK_EX) !== false;
+    $written = @file_put_contents($path, $entry, FILE_APPEND | LOCK_EX) !== false;
+    if ($written) {
+        @chmod($path, 0600);
+    }
+    return $written;
 }
 
 function renderStatusPage(
