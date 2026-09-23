@@ -1,14 +1,22 @@
 <?php
 declare(strict_types=1);
 
-// Temporary direct notification while KS establishes its first client engagements.
-$recipientEmail = 'jsloravargas@gmail.com';
 $senderEmail = 'klora@ks-techconsulting.com';
+$recipientEmail = $senderEmail;
 $defaultReturnUrl = 'index.html';
 $siteName = 'KS Tech Consulting';
 // Keep submitted contact details outside the publicly served document root.
 $privateLogDirectory = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'ks-leads';
 $logFilePath = $privateLogDirectory . DIRECTORY_SEPARATOR . 'lead-capture-submissions.log';
+$recipientConfigPath = $privateLogDirectory . DIRECTORY_SEPARATOR . 'lead-recipient.txt';
+if (is_readable($recipientConfigPath)) {
+    $configuredRecipient = trim((string) file_get_contents($recipientConfigPath));
+    if (filter_var($configuredRecipient, FILTER_VALIDATE_EMAIL)) {
+        $recipientEmail = $configuredRecipient;
+    } else {
+        error_log('KS lead recipient config is invalid; using company inbox.');
+    }
+}
 
 $fieldLabels = [
     'form_name' => 'Form Name',
