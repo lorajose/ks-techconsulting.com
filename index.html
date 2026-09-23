@@ -54,7 +54,7 @@
                 <a href="#quick-start" class="transition hover:text-teal">Salesforce Support</a>
                 <a href="#lead-capture" class="rounded-full bg-ink px-5 py-2.5 text-white transition hover:bg-navy">Schedule a Technical Consultation</a>
             </nav>
-            <button id="menuToggle" class="rounded-lg border border-slate-300 p-2 text-slate-700 md:hidden" type="button" aria-label="Open menu">
+            <button id="menuToggle" class="rounded-lg border border-slate-300 p-2 text-slate-700 md:hidden" type="button" aria-label="Open menu" aria-controls="mobileNav" aria-expanded="false">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
@@ -94,8 +94,8 @@
                         <a href="#lead-capture" class="rounded-full bg-white px-7 py-3 text-center text-sm font-bold text-ink transition hover:bg-slate-100">
                             Schedule a Technical Consultation
                         </a>
-                        <a href="#lead-capture" class="rounded-full border border-white/40 px-7 py-3 text-center text-sm font-bold text-white transition hover:bg-white/10">
-                            Request an Architecture Review
+                        <a href="#solution-finder" class="rounded-full border border-white/40 px-7 py-3 text-center text-sm font-bold text-white transition hover:bg-white/10">
+                            Explore a first step
                         </a>
                     </div>
                     <div class="mt-10 grid gap-4 sm:grid-cols-2">
@@ -134,6 +134,40 @@
                                 <p class="text-xs uppercase tracking-wide text-slate-300">Integration Stack</p>
                                 <p class="mt-1 font-semibold text-white">MuleSoft, Boomi, SnapLogic, API orchestration, custom business software</p>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="solution-finder" class="relative overflow-hidden bg-slate-950 py-20 text-white" aria-labelledby="finder-heading">
+            <div class="pointer-events-none absolute -right-24 top-0 h-96 w-96 rounded-full bg-teal/20 blur-3xl"></div>
+            <div class="relative mx-auto max-w-7xl px-6 lg:px-8">
+                <div class="max-w-3xl">
+                    <p class="text-sm font-semibold uppercase tracking-widest text-teal-300">Explore your next step</p>
+                    <h2 id="finder-heading" class="mt-3 font-display text-3xl font-extrabold sm:text-4xl">What is slowing your business down?</h2>
+                    <p class="mt-4 text-slate-300">Choose a situation. See what we would clarify first, then share the details with our team. This guide does not access your systems or make a diagnosis.</p>
+                </div>
+                <div class="mt-10 grid gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+                    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1" aria-label="Choose a business problem">
+                        <button type="button" class="finder-choice rounded-2xl border border-teal-300 bg-teal-400/15 p-5 text-left transition hover:border-teal-200 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300" data-focus="salesforce" aria-pressed="true"><span class="block text-xs font-semibold uppercase tracking-widest text-teal-200">01 · Salesforce</span><span class="mt-2 block font-display text-lg font-bold">A Flow or Apex change is stuck</span></button>
+                        <button type="button" class="finder-choice rounded-2xl border border-white/20 bg-white/5 p-5 text-left transition hover:border-teal-200 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300" data-focus="integration" aria-pressed="false"><span class="block text-xs font-semibold uppercase tracking-widest text-teal-200">02 · Integrations</span><span class="mt-2 block font-display text-lg font-bold">Systems disagree about the data</span></button>
+                        <button type="button" class="finder-choice rounded-2xl border border-white/20 bg-white/5 p-5 text-left transition hover:border-teal-200 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300" data-focus="website" aria-pressed="false"><span class="block text-xs font-semibold uppercase tracking-widest text-teal-200">03 · Website</span><span class="mt-2 block font-display text-lg font-bold">Inquiries disappear after submission</span></button>
+                        <button type="button" class="finder-choice rounded-2xl border border-white/20 bg-white/5 p-5 text-left transition hover:border-teal-200 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300" data-focus="automation" aria-pressed="false"><span class="block text-xs font-semibold uppercase tracking-widest text-teal-200">04 · Automation</span><span class="mt-2 block font-display text-lg font-bold">AI has not reached a real workflow</span></button>
+                    </div>
+                    <div class="flex flex-col justify-between rounded-3xl border border-white/20 bg-white p-7 text-ink shadow-soft sm:p-9" aria-live="polite">
+                        <div>
+                            <p id="finder-category" class="text-xs font-bold uppercase tracking-widest text-teal">Salesforce repair</p>
+                            <h3 id="finder-title" class="mt-4 font-display text-2xl font-bold sm:text-3xl">Start with the failing workflow.</h3>
+                            <p id="finder-description" class="mt-4 text-slate-600">We trace the expected result, the observed failure and the affected records before recommending a change.</p>
+                            <div class="mt-7 rounded-2xl bg-slate-50 p-5">
+                                <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Bring to the first conversation</p>
+                                <p id="finder-input" class="mt-2 font-semibold text-ink">The Flow or Apex component, an example of the error and its business impact. Please do not send credentials or customer records.</p>
+                            </div>
+                        </div>
+                        <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                            <a id="finder-action" href="salesforce-repair.html?utm_source=homepage&amp;utm_medium=guide&amp;utm_campaign=salesforce#request" class="inline-flex justify-center rounded-full bg-teal px-6 py-3 text-sm font-bold text-white transition hover:bg-emerald-700">Explore Salesforce repair</a>
+                            <a href="reparacion-salesforce.html" lang="es" hreflang="es" class="text-center text-sm font-semibold text-teal underline">También en español</a>
                         </div>
                     </div>
                 </div>
@@ -319,6 +353,7 @@
                         <input type="hidden" name="source_page" value="Home Page Lead Capture">
                         <input type="hidden" name="return_url" value="index.html#lead-capture">
                         <input type="hidden" name="email_subject" value="Home Page Lead Capture Request">
+                        <input type="hidden" name="diagnostic_focus" id="diagnostic_focus" value="">
                         <div class="hidden" aria-hidden="true">
                             <label for="website_home">Leave this field empty</label>
                             <input id="website_home" name="website" type="text" tabindex="-1" autocomplete="off">
@@ -407,13 +442,73 @@
 
         if (menuToggle && mobileNav) {
             menuToggle.addEventListener('click', () => {
-                mobileNav.classList.toggle('hidden');
+                const open = mobileNav.classList.toggle('hidden') === false;
+                menuToggle.setAttribute('aria-expanded', String(open));
+                menuToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
             });
+            mobileNav.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => {
+                mobileNav.classList.add('hidden');
+                menuToggle.setAttribute('aria-expanded', 'false');
+                menuToggle.setAttribute('aria-label', 'Open menu');
+            }));
         }
 
         if (yearElement) {
             yearElement.textContent = new Date().getFullYear();
         }
+
+        const finderOptions = {
+            salesforce: {
+                category: 'Salesforce repair', title: 'Start with the failing workflow.',
+                description: 'We trace the expected result, the observed failure and the affected records before recommending a change.',
+                input: 'The Flow or Apex component, an example of the error and its business impact. Please do not send credentials or customer records.',
+                action: 'Explore Salesforce repair', href: 'salesforce-repair.html?utm_source=homepage&utm_medium=guide&utm_campaign=salesforce#request', interest: 'Salesforce Flow or Apex Repair'
+            },
+            integration: {
+                category: 'Connected systems', title: 'Map where the information stops matching.',
+                description: 'We identify the systems involved, the source of truth and the point where records fail to sync.',
+                input: 'The systems involved, one example of a mismatch and how often it happens. No customer records are needed.',
+                action: 'Discuss an integration', href: '#lead-capture', interest: 'Salesforce Integration'
+            },
+            website: {
+                category: 'Lead handoff', title: 'Follow the inquiry from form to follow-up.',
+                description: 'We examine whether submissions reach the right inbox or CRM record and who is responsible for responding.',
+                input: 'The website form, expected recipient and last point where the inquiry can be confirmed.',
+                action: 'Discuss lead capture', href: '#lead-capture', interest: 'Custom Web Development'
+            },
+            automation: {
+                category: 'Practical AI', title: 'Pick one repeatable task to validate.',
+                description: 'We define the task, the human review step and how you would measure whether automation saves time.',
+                input: 'A repetitive workflow, who performs it now and the outcome that would make it useful.',
+                action: 'Discuss automation', href: '#lead-capture', interest: 'AI Automation Solutions'
+            }
+        };
+        const finderChoices = document.querySelectorAll('.finder-choice');
+        const finderAction = document.getElementById('finder-action');
+        const finderInterest = document.getElementById('interest');
+        const finderFocus = document.getElementById('diagnostic_focus');
+        finderChoices.forEach((button) => {
+            button.addEventListener('click', () => {
+                const option = finderOptions[button.dataset.focus];
+                if (!option) return;
+                finderChoices.forEach((choice) => {
+                    const selected = choice === button;
+                    choice.setAttribute('aria-pressed', String(selected));
+                    choice.classList.toggle('border-teal-300', selected);
+                    choice.classList.toggle('bg-teal-400/15', selected);
+                    choice.classList.toggle('border-white/20', !selected);
+                    choice.classList.toggle('bg-white/5', !selected);
+                });
+                document.getElementById('finder-category').textContent = option.category;
+                document.getElementById('finder-title').textContent = option.title;
+                document.getElementById('finder-description').textContent = option.description;
+                document.getElementById('finder-input').textContent = option.input;
+                finderAction.textContent = option.action;
+                finderAction.href = option.href;
+                finderInterest.value = option.interest;
+                finderFocus.value = button.dataset.focus;
+            });
+        });
     </script>
 </body>
 
