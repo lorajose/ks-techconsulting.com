@@ -2,4 +2,6 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/oblm9wnyeimr/ks-techconsulting.com/
+    - /bin/mkdir -p /home/oblm9wnyeimr/ks-leads
+    - /bin/sh -c 'private=/home/oblm9wnyeimr/ks-leads/lead-recipient.txt; public=/home/oblm9wnyeimr/ks-techconsulting.com/lead-recipient.txt; if [ -f "$private" ]; then [ ! -e "$public" ] || exit 1; elif [ -f "$public" ]; then /bin/mv "$public" "$private" || exit 1; else exit 1; fi; /bin/chmod 700 /home/oblm9wnyeimr/ks-leads && /bin/chmod 600 "$private"'
     - /bin/rsync -av --delete --exclude '.git' /home/oblm9wnyeimr/repositories/ks-techconsulting.com/ $DEPLOYPATH
