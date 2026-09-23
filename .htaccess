@@ -5,3 +5,7 @@ RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 <FilesMatch "^lead-capture-submissions\.log$">
     Require all denied
 </FilesMatch>
+
+<Files "lead-recipient.txt">
+    Require all denied
+</Files>
