@@ -1,7 +1,8 @@
 <?php
 declare(strict_types=1);
 
-$recipientEmail = 'klora@ks-techconsulting.com';
+// Temporary direct notification while KS establishes its first client engagements.
+$recipientEmail = 'jsloravargas@gmail.com';
 $senderEmail = 'klora@ks-techconsulting.com';
 $defaultReturnUrl = 'index.html';
 $siteName = 'KS Tech Consulting';
@@ -157,7 +158,7 @@ function renderStatusPage(
     echo '                <a class="btn btn-primary" href="' . escapeHtml($returnUrl) . '">Return to Website</a>';
     echo '                <a class="btn btn-secondary" href="contact.html">Open Contact Page</a>';
     echo '            </div>';
-    echo '            <p class="footnote">If the issue persists, email ' . escapeHtml($GLOBALS['recipientEmail']) . ' directly and include your project scope.</p>';
+    echo '            <p class="footnote">If the issue persists, email ' . escapeHtml($GLOBALS['senderEmail']) . ' directly and include your project scope.</p>';
     echo '        </section>';
     echo '    </main>';
     echo '</body>';
@@ -292,7 +293,7 @@ if (!$emailSent && !$submissionLogged) {
         'error',
         'The Server Could Not Send Your Request',
         'The form data was validated, but the hosting server did not complete the email handoff or local lead logging. Please contact us directly.',
-        ['Recipient: ' . $recipientEmail, 'Form: ' . $formName, 'Server Log: Unavailable'],
+        ['Form: ' . $formName, 'Server Log: Unavailable'],
         $returnUrl
     );
     exit;
@@ -303,7 +304,7 @@ if (!$emailSent && $submissionLogged) {
         'info',
         'Your Request Was Recorded',
         'The form was saved on the server, but email delivery from the hosting environment needs attention. KS can still retrieve your request from the server log.',
-        ['Recipient: ' . $recipientEmail, 'Form: ' . $formName, 'Server Log: Saved'],
+        ['Form: ' . $formName, 'Server Log: Saved'],
         $returnUrl
     );
     exit;
@@ -314,7 +315,6 @@ renderStatusPage(
     'Your Consultation Request Was Submitted',
     'Thank you. We received your request, saved it on the server, and handed it to the mail system for delivery.',
     [
-        'Recipient: ' . $recipientEmail,
         'Form: ' . $formName,
         'Primary Interest: ' . ($subjectContext !== '' ? $subjectContext : 'General Inquiry'),
         'Server Log: ' . ($submissionLogged ? 'Saved' : 'Unavailable'),
