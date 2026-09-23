@@ -9,6 +9,7 @@ $siteName = 'KS Tech Consulting';
 $privateLogDirectory = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'ks-leads';
 $logFilePath = $privateLogDirectory . DIRECTORY_SEPARATOR . 'lead-capture-submissions.log';
 $recipientConfigPath = $privateLogDirectory . DIRECTORY_SEPARATOR . 'lead-recipient.txt';
+$resendKeyPath = $privateLogDirectory . DIRECTORY_SEPARATOR . 'resend-api-key.txt';
 if (is_readable($recipientConfigPath)) {
     $configuredRecipient = trim((string) file_get_contents($recipientConfigPath));
     if (filter_var($configuredRecipient, FILTER_VALIDATE_EMAIL)) {
@@ -99,6 +100,58 @@ function appendSubmissionLog(string $path, string $subject, string $body): bool
         @chmod($path, 0600);
     }
     return $written;
+}
+
+function sendViaResend(string $key, string $recipient, string $subject, string $body, string $replyTo): array
+{
+    if (!function_exists('curl_init')) {
+        return ['accepted' => false, 'id' => '', 'error' => 'PHP cURL extension unavailable'];
+    }
+
+    $payload = json_encode([
+        'from' => 'KS Tech Consulting <leads@notify.ks-techconsulting.com>',
+        'to' => [$recipient],
+        'subject' => $subject,
+        'text' => $body,
+        'reply_to' => $replyTo,
+    ]);
+    if ($payload === false) {
+        return ['accepted' => false, 'id' => '', 'error' => 'Could not encode email payload'];
+    }
+
+    $connection = curl_init('https://api.resend.com/emails');
+    if ($connection === false) {
+        return ['accepted' => false, 'id' => '', 'error' => 'Could not initialize HTTPS connection'];
+    }
+
+    curl_setopt_array($connection, [
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $payload,
+        CURLOPT_HTTPHEADER => [
+            'Authorization: Bearer ' . $key,
+            'Content-Type: application/json',
+        ],
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CONNECTTIMEOUT => 5,
+        CURLOPT_TIMEOUT => 12,
+    ]);
+    $response = curl_exec($connection);
+    $statusCode = (int) curl_getinfo($connection, CURLINFO_HTTP_CODE);
+    $transportError = curl_error($connection);
+    curl_close($connection);
+
+    if ($response === false || $statusCode < 200 || $statusCode >= 300) {
+        // Do not log the response body: it can include private email details.
+        return ['accepted' => false, 'id' => '', 'error' => 'HTTP ' . $statusCode . ($transportError !== '' ? ' / cURL error' : '')];
+    }
+
+    $result = json_decode($response, true);
+    $id = is_array($result) && isset($result['id']) && is_string($result['id']) ? $result['id'] : '';
+    if ($id === '') {
+        return ['accepted' => false, 'id' => '', 'error' => 'API accepted request without an email ID'];
+    }
+
+    return ['accepted' => true, 'id' => $id, 'error' => ''];
 }
 
 function renderStatusPage(
@@ -294,7 +347,25 @@ $headers = [
 ];
 
 $submissionLogged = appendSubmissionLog($logFilePath, $emailSubject, $emailBody);
-$emailSent = @mail($recipientEmail, $emailSubject, $emailBody, implode("\r\n", $headers), '-f' . $senderEmail);
+$resendKey = is_readable($resendKeyPath) ? trim((string) file_get_contents($resendKeyPath)) : '';
+$deliveryMethod = 'Hosting mail';
+$deliveryId = '';
+if ($resendKey !== '') {
+    $deliveryMethod = 'Resend API';
+    $sendResult = sendViaResend($resendKey, $recipientEmail, $emailSubject, $emailBody, $email);
+    $emailSent = $sendResult['accepted'];
+    $deliveryId = $sendResult['id'];
+    if (!$emailSent) {
+        error_log('KS lead notification via Resend failed: ' . $sendResult['error']);
+    }
+} else {
+    // Existing hosting mail remains available until the verified API is configured.
+    $emailSent = @mail($recipientEmail, $emailSubject, $emailBody, implode("\r\n", $headers), '-f' . $senderEmail);
+}
+if ($submissionLogged) {
+    // Record a trace without writing the private recipient or API key to the log.
+    @file_put_contents($logFilePath, 'Delivery: ' . $deliveryMethod . ($emailSent ? ' accepted' : ' failed') . ($deliveryId !== '' ? ' / ID: ' . $deliveryId : '') . "\r\n", FILE_APPEND | LOCK_EX);
+}
 
 if (!$emailSent && !$submissionLogged) {
     renderStatusPage(
@@ -311,7 +382,7 @@ if (!$emailSent && $submissionLogged) {
     renderStatusPage(
         'info',
         'Your Request Was Recorded',
-        'The form was saved on the server, but email delivery from the hosting environment needs attention. KS can still retrieve your request from the server log.',
+        'The form was saved on the server, but the email notification needs attention. KS can still retrieve your request from the server log.',
         ['Form: ' . $formName, 'Server Log: Saved'],
         $returnUrl
     );
@@ -321,7 +392,7 @@ if (!$emailSent && $submissionLogged) {
 renderStatusPage(
     'success',
     'Your Consultation Request Was Submitted',
-    'Thank you. We received your request, saved it on the server, and handed it to the mail system for delivery.',
+    'Thank you. Your request was saved on the server and accepted for email delivery.',
     [
         'Form: ' . $formName,
         'Primary Interest: ' . ($subjectContext !== '' ? $subjectContext : 'General Inquiry'),
