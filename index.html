@@ -167,7 +167,7 @@
                         </div>
                         <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
                             <a id="finder-action" href="salesforce-repair.html?utm_source=homepage&amp;utm_medium=guide&amp;utm_campaign=salesforce#request" class="inline-flex justify-center rounded-full bg-teal px-6 py-3 text-sm font-bold text-white transition hover:bg-emerald-700">Explore Salesforce repair</a>
-                            <a href="reparacion-salesforce.html" lang="es" hreflang="es" class="text-center text-sm font-semibold text-teal underline">También en español</a>
+                            <a id="finder-spanish" href="reparacion-salesforce.html" lang="es" hreflang="es" class="text-center text-sm font-semibold text-teal underline">También en español</a>
                         </div>
                     </div>
                 </div>
@@ -462,29 +462,30 @@
                 category: 'Salesforce repair', title: 'Start with the failing workflow.',
                 description: 'We trace the expected result, the observed failure and the affected records before recommending a change.',
                 input: 'The Flow or Apex component, an example of the error and its business impact. Please do not send credentials or customer records.',
-                action: 'Explore Salesforce repair', href: 'salesforce-repair.html?utm_source=homepage&utm_medium=guide&utm_campaign=salesforce#request', interest: 'Salesforce Flow or Apex Repair'
+                action: 'Explore Salesforce repair', href: 'salesforce-repair.html?utm_source=homepage&utm_medium=guide&utm_campaign=salesforce#request', spanishHref: 'reparacion-salesforce.html', interest: 'Salesforce Flow or Apex Repair'
             },
             integration: {
                 category: 'Connected systems', title: 'Map where the information stops matching.',
                 description: 'We identify the systems involved, the source of truth and the point where records fail to sync.',
                 input: 'The systems involved, one example of a mismatch and how often it happens. No customer records are needed.',
-                action: 'Discuss an integration', href: '#lead-capture', interest: 'Salesforce Integration'
+                action: 'Discuss an integration', href: '#lead-capture', spanishHref: 'es.html#diagnostico', interest: 'Salesforce Integration'
             },
             website: {
                 category: 'Lead handoff', title: 'Follow the inquiry from form to follow-up.',
                 description: 'We examine whether submissions reach the right inbox or CRM record and who is responsible for responding.',
                 input: 'The website form, expected recipient and last point where the inquiry can be confirmed.',
-                action: 'Discuss lead capture', href: '#lead-capture', interest: 'Custom Web Development'
+                action: 'Discuss lead capture', href: '#lead-capture', spanishHref: 'es.html#diagnostico', interest: 'Custom Web Development'
             },
             automation: {
                 category: 'Practical AI', title: 'Pick one repeatable task to validate.',
                 description: 'We define the task, the human review step and how you would measure whether automation saves time.',
                 input: 'A repetitive workflow, who performs it now and the outcome that would make it useful.',
-                action: 'Discuss automation', href: '#lead-capture', interest: 'AI Automation Solutions'
+                action: 'Discuss automation', href: '#lead-capture', spanishHref: 'es.html#diagnostico', interest: 'AI Automation Solutions'
             }
         };
         const finderChoices = document.querySelectorAll('.finder-choice');
         const finderAction = document.getElementById('finder-action');
+        const finderSpanish = document.getElementById('finder-spanish');
         const finderInterest = document.getElementById('interest');
         const finderFocus = document.getElementById('diagnostic_focus');
         finderChoices.forEach((button) => {
@@ -505,6 +506,7 @@
                 document.getElementById('finder-input').textContent = option.input;
                 finderAction.textContent = option.action;
                 finderAction.href = option.href;
+                finderSpanish.href = option.spanishHref;
                 finderInterest.value = option.interest;
                 finderFocus.value = button.dataset.focus;
             });
