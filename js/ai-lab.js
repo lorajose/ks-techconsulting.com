@@ -43,14 +43,16 @@
     if (problem.length < 25) { $('error').textContent = es ? 'Describe el problema en al menos 25 caracteres o elige un ejemplo.' : 'Describe your problem in at least 25 characters or choose a sample.'; return; }
     if (!$('consent').checked) { $('error').textContent = es ? 'Confirma primero el aviso sobre el envío a un proveedor de IA.' : 'Please confirm the AI provider notice first.'; return; }
     $('error').textContent = ''; $('analyze').disabled = true;
+    let diagnostic = '';
     try {
       const response = await fetch('ai-demo.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({problem, language:$('language').value}), credentials:'same-origin', cache:'no-store' });
       const payload = await response.json();
+      diagnostic = typeof payload.diagnostic === 'string' && /^[A-Z_]{2,20}$/.test(payload.diagnostic) ? payload.diagnostic : '';
       if (!response.ok || payload.mode !== 'live' || !payload.result) throw new Error(payload.error || 'unavailable');
       render(payload.result, 'live');
     } catch (_) {
       showSample(pick(problem));
-      $('error').textContent = es ? 'El análisis en vivo no está disponible. Mostramos un ejemplo relacionado; no analiza los detalles de tu texto.' : 'Live AI analysis is unavailable. This is a related sample; it does not analyze the details of your text.';
+      $('error').textContent = (es ? 'El análisis en vivo no está disponible. Mostramos un ejemplo relacionado; no analiza los detalles de tu texto.' : 'Live AI analysis is unavailable. This is a related sample; it does not analyze the details of your text.') + (diagnostic ? ` · ${es ? 'Código' : 'Code'}: ${diagnostic}` : '');
     } finally { $('analyze').disabled = false; }
   });
   showSample('salesforce');

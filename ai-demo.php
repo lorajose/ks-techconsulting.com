@@ -4,6 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, max-age=0');
 header('X-Content-Type-Options: nosniff');
 function reply(int $status, array $payload): void { http_response_code($status); echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE); exit; }
+function unavailable(string $code): void { reply(503, ['error'=>'Live AI unavailable','diagnostic'=>$code]); }
 function shortText(string $value, int $limit): string { return function_exists('mb_substr') ? mb_substr($value, 0, $limit) : substr($value, 0, $limit); }
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { header('Allow: POST'); reply(405, ['error'=>'Method not allowed']); }
 if (!str_starts_with(strtolower((string)($_SERVER['CONTENT_TYPE'] ?? '')), 'application/json')) reply(415, ['error'=>'JSON required']);
@@ -17,18 +18,18 @@ $problem = trim($input['problem']);
 if (strlen($problem) < 25 || strlen($problem) > 3000 || preg_match('/[\x00-\x08\x0b\x0c\x0e-\x1f]/', $problem)) reply(400, ['error'=>'Problem length or characters invalid']);
 $private = dirname(__DIR__) . '/ks-leads';
 $keyPath = $private . '/openai-api-key.txt';
-if (!is_readable($keyPath) || !function_exists('curl_init')) reply(503, ['error'=>'Live AI not configured']);
+if (!is_readable($keyPath) || !function_exists('curl_init')) unavailable('CONFIG');
 $key = trim((string)file_get_contents($keyPath));
-if (!preg_match('/^sk-[A-Za-z0-9_-]{15,}$/', $key)) reply(503, ['error'=>'Live AI not configured']);
+if (!preg_match('/^sk-[A-Za-z0-9_-]{15,}$/', $key)) unavailable('CONFIG');
 // A capped per-IP counter is stored outside the document root. Never store the problem text.
-if (!is_dir($private) || !is_writable($private)) reply(503, ['error'=>'Service unavailable']);
+if (!is_dir($private) || !is_writable($private)) unavailable('STORAGE');
 $bucket = hash_hmac('sha256', (string)($_SERVER['REMOTE_ADDR'] ?? '') . ':' . date('Y-m-d-H') . ':ai-lab', $key);
 $handle = @fopen($private . '/ai-rate-' . $bucket . '.txt', 'c+');
-if ($handle === false) reply(503, ['error'=>'Service unavailable']);
+if ($handle === false) unavailable('STORAGE');
 @chmod($private . '/ai-rate-' . $bucket . '.txt', 0600);
-if (!flock($handle, LOCK_EX)) { fclose($handle); reply(503, ['error'=>'Service unavailable']); }
+if (!flock($handle, LOCK_EX)) { fclose($handle); unavailable('STORAGE'); }
 $count = (int)stream_get_contents($handle);
-if ($count >= 5) { flock($handle, LOCK_UN); fclose($handle); reply(429, ['error'=>'Hourly limit reached']); }
+if ($count >= 5) { flock($handle, LOCK_UN); fclose($handle); reply(429, ['error'=>'Hourly limit reached','diagnostic'=>'RATE_LIMIT']); }
 rewind($handle); ftruncate($handle, 0); fwrite($handle, (string)($count + 1)); fflush($handle); flock($handle, LOCK_UN); fclose($handle);
 $properties = [];
 foreach (['headline','bottleneck'] as $field) $properties[$field] = ['type'=>'string'];
@@ -42,15 +43,27 @@ $body = [
 $ch = curl_init('https://api.openai.com/v1/responses');
 curl_setopt_array($ch, [CURLOPT_POST=>true,CURLOPT_POSTFIELDS=>json_encode($body, JSON_UNESCAPED_UNICODE),CURLOPT_HTTPHEADER=>['Authorization: Bearer ' . $key,'Content-Type: application/json'],CURLOPT_RETURNTRANSFER=>true,CURLOPT_CONNECTTIMEOUT=>5,CURLOPT_TIMEOUT=>22]);
 $raw = curl_exec($ch); $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
-if (!is_string($raw) || $status < 200 || $status >= 300) reply(503, ['error'=>'Live AI unavailable']);
+if (!is_string($raw)) unavailable('NETWORK');
+if ($status < 200 || $status >= 300) {
+  $upstream = json_decode($raw, true);
+  $upstreamCode = $upstream['error']['code'] ?? null;
+  $diagnostic = match (true) {
+    $status === 401 || $status === 403 => 'API_AUTH',
+    $status === 429 && $upstreamCode === 'insufficient_quota' => 'API_QUOTA',
+    $status === 429 => 'API_RATE',
+    $status === 400 || $status === 404 || $status === 422 => 'API_REQUEST',
+    default => 'API_UPSTREAM',
+  };
+  unavailable($diagnostic);
+}
 $data = json_decode($raw, true); $text = null;
 foreach (($data['output'] ?? []) as $item) foreach (($item['content'] ?? []) as $part) if (($part['type'] ?? '') === 'output_text') $text = $part['text'] ?? null;
 $result = is_string($text) ? json_decode($text, true) : null;
-if (!is_array($result)) reply(503, ['error'=>'Live AI unavailable']);
-foreach (['headline','bottleneck'] as $field) if (!is_string($result[$field] ?? null) || $result[$field] === '') reply(503, ['error'=>'Invalid AI response']);
+if (!is_array($result)) unavailable('AI_OUTPUT');
+foreach (['headline','bottleneck'] as $field) if (!is_string($result[$field] ?? null) || $result[$field] === '') unavailable('AI_OUTPUT');
 foreach (['steps','before','after','safeguards'] as $field) {
-  if (!is_array($result[$field] ?? null) || count($result[$field]) < 3 || count($result[$field]) > 4) reply(503, ['error'=>'Invalid AI response']);
-  foreach ($result[$field] as $value) if (!is_string($value)) reply(503, ['error'=>'Invalid AI response']);
+  if (!is_array($result[$field] ?? null) || count($result[$field]) < 3 || count($result[$field]) > 4) unavailable('AI_OUTPUT');
+  foreach ($result[$field] as $value) if (!is_string($value)) unavailable('AI_OUTPUT');
   $result[$field] = array_map(static fn(string $value): string => shortText($value, 200), $result[$field]);
 }
 $result['headline'] = shortText($result['headline'], 140);
