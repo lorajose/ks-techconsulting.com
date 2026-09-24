@@ -460,6 +460,17 @@
             yearElement.textContent = new Date().getFullYear();
         }
 
+        // Prefill only values already offered by this form; never copy demo text into a lead.
+        const referralParams = new URLSearchParams(window.location.search);
+        if (referralParams.get('utm_source') === 'ai-lab') {
+            const requestedInterest = referralParams.get('interest');
+            const interestSelect = document.getElementById('interest');
+            if (requestedInterest && Array.from(interestSelect.options).some(option => option.value === requestedInterest)) {
+                interestSelect.value = requestedInterest;
+            }
+            document.querySelector('input[name="source_page"]').value = 'Interactive AI Lab referral';
+        }
+
         const finderOptions = {
             salesforce: {
                 category: 'Salesforce repair', title: 'Start with the failing workflow.',
