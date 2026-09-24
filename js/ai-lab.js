@@ -19,7 +19,22 @@
       es: { headline:'Ayudar a soporte con conocimiento aprobado', bottleneck:'El equipo repite búsquedas cuando las respuestas están repartidas entre documentos y casos.', steps:['Pregunta de soporte','Búsqueda en fuentes aprobadas','Borrador IA con fuentes','Revisión humana y tablero'], before:['Respuestas en varios documentos','Búsquedas repetidas','Sin revisión de borradores IA'], after:['Respuesta sugerida con fuentes','Persona aprueba antes de enviar','Temas sin respuesta identificados'], safeguards:['Respetar permisos de documentos','No exponer registros reales a una demo pública','Exigir revisión humana y de fuentes'] }
     }
   };
-  const pick = text => /pos|invent|stock|order|pedido|venta|shopify|square/i.test(text) ? 'pos' : /support|soporte|ticket|faq|knowledge|conocimiento|chat/i.test(text) ? 'support' : /lead|contact|form|prospect|cliente|website|sitio/i.test(text) ? 'leads' : 'salesforce';
+  // Prioritize named platforms and failure types: "Salesforce ... sales team" is a Salesforce case.
+  const pick = text => /salesforce|\bapex\b|\bflow\b|\bcrm\b/i.test(text) ? 'salesforce' : /\bpos\b|invent|stock|order|pedido|venta|shopify|square/i.test(text) ? 'pos' : /support|soporte|ticket|faq|knowledge|conocimiento|chat/i.test(text) ? 'support' : /lead|contact|form|prospect|cliente|website|sitio/i.test(text) ? 'leads' : 'salesforce';
+  const followUp = {
+    salesforce: { href:'salesforce-repair.html?utm_source=ai-lab&utm_medium=demo#request', esHref:'reparacion-salesforce.html?utm_source=ai-lab&utm_medium=demo#solicitud', en:'Discuss a Salesforce repair', es:'Consultar reparación de Salesforce' },
+    pos: { href:'index.html?interest=POS%20Integration&utm_source=ai-lab#lead-capture', en:'Discuss a POS integration', es:'Consultar integración POS' },
+    leads: { href:'index.html?interest=Custom%20Web%20Development&utm_source=ai-lab#lead-capture', en:'Discuss lead capture', es:'Consultar captación de clientes' },
+    support: { href:'index.html?interest=AI%20Automation%20Solutions&utm_source=ai-lab#lead-capture', en:'Discuss AI support', es:'Consultar soporte con IA' }
+  };
+  const updateFollowUp = key => {
+    const option = followUp[key];
+    const es = $('language').value === 'es';
+    document.querySelectorAll('[data-lab-cta]').forEach(link => {
+      link.href = es && option.esHref ? option.esHref : option.href;
+      link.textContent = es ? option.es : option.en;
+    });
+  };
   const addList = (id, items) => { const target = $(id); target.replaceChildren(); items.slice(0, 4).forEach(item => { const li = document.createElement('li'); li.textContent = String(item).slice(0, 200); target.append(li); }); };
   function render(data, mode) {
     const es = $('language').value === 'es';
@@ -34,7 +49,7 @@
     $('disclaimer').textContent = es ? 'Flujo y tablero ilustrativos. No hay conexión a datos ni sistemas de clientes. No se garantizan resultados.' : 'Illustrative workflow and dashboard. No customer environment or live business data is connected. Outcomes are not guaranteed.';
   }
   let selectedCase = 'salesforce';
-  const showSample = key => { selectedCase = key; $('error').textContent = ''; render(cases[key][$('language').value], 'sample'); };
+  const showSample = key => { selectedCase = key; $('error').textContent = ''; render(cases[key][$('language').value], 'sample'); updateFollowUp(key); };
   document.querySelectorAll('[data-case]').forEach(button => button.addEventListener('click', () => { $('problem').value = ''; showSample(button.dataset.case); }));
   $('language').addEventListener('change', () => showSample($('problem').value.trim() ? pick($('problem').value) : selectedCase));
   $('clear').addEventListener('click', () => { $('problem').value = ''; $('consent').checked = false; showSample('salesforce'); });
@@ -50,6 +65,7 @@
       diagnostic = typeof payload.diagnostic === 'string' && /^[A-Z_]{2,20}$/.test(payload.diagnostic) ? payload.diagnostic : '';
       if (!response.ok || payload.mode !== 'live' || !payload.result) throw new Error(payload.error || 'unavailable');
       render(payload.result, 'live');
+      updateFollowUp(pick(problem));
     } catch (_) {
       showSample(pick(problem));
       $('error').textContent = (es ? 'El análisis en vivo no está disponible. Mostramos un ejemplo relacionado; no analiza los detalles de tu texto.' : 'Live AI analysis is unavailable. This is a related sample; it does not analyze the details of your text.') + (diagnostic ? ` · ${es ? 'Código' : 'Code'}: ${diagnostic}` : '');
