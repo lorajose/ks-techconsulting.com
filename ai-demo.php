@@ -47,9 +47,11 @@ if (!is_string($raw)) unavailable('NETWORK');
 if ($status < 200 || $status >= 300) {
   $upstream = json_decode($raw, true);
   $upstreamCode = $upstream['error']['code'] ?? null;
+  $upstreamType = $upstream['error']['type'] ?? null;
+  $quotaCodes = ['insufficient_quota', 'credit_balance_exhausted', 'organization_usage_limit_exceeded', 'organization_spend_limit_exceeded', 'project_spend_limit_exceeded'];
   $diagnostic = match (true) {
     $status === 401 || $status === 403 => 'API_AUTH',
-    $status === 429 && $upstreamCode === 'insufficient_quota' => 'API_QUOTA',
+    $status === 429 && (in_array($upstreamCode, $quotaCodes, true) || $upstreamType === 'insufficient_quota') => 'API_QUOTA',
     $status === 429 => 'API_RATE',
     $status === 400 || $status === 404 || $status === 422 => 'API_REQUEST',
     default => 'API_UPSTREAM',
