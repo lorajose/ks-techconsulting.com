@@ -22,10 +22,10 @@
   // Prioritize named platforms and failure types: "Salesforce ... sales team" is a Salesforce case.
   const pick = text => /salesforce|\bapex\b|\bflow\b|\bcrm\b/i.test(text) ? 'salesforce' : /\bpos\b|invent|stock|order|pedido|venta|shopify|square/i.test(text) ? 'pos' : /support|soporte|ticket|faq|knowledge|conocimiento|chat/i.test(text) ? 'support' : /lead|contact|form|prospect|cliente|website|sitio/i.test(text) ? 'leads' : 'salesforce';
   const followUp = {
-    salesforce: { href:'salesforce-repair.html?utm_source=ai-lab&utm_medium=demo#request', esHref:'reparacion-salesforce.html?utm_source=ai-lab&utm_medium=demo#solicitud', en:'Discuss a Salesforce repair', es:'Consultar reparación de Salesforce' },
-    pos: { href:'index.html?interest=POS%20Integration&utm_source=ai-lab#lead-capture', en:'Discuss a POS integration', es:'Consultar integración POS' },
-    leads: { href:'index.html?interest=Custom%20Web%20Development&utm_source=ai-lab#lead-capture', en:'Discuss lead capture', es:'Consultar captación de clientes' },
-    support: { href:'index.html?interest=AI%20Automation%20Solutions&utm_source=ai-lab#lead-capture', en:'Discuss AI support', es:'Consultar soporte con IA' }
+    salesforce: { href:'start.html?issue=salesforce', esHref:'es.html#diagnostico', en:'Discuss a Salesforce repair', es:'Consultar reparación de Salesforce' },
+    pos: { href:'start.html?issue=pos', esHref:'es.html#diagnostico', en:'Discuss a POS integration', es:'Consultar integración POS' },
+    leads: { href:'start.html?issue=leads', esHref:'es.html#diagnostico', en:'Discuss lead capture', es:'Consultar captación de clientes' },
+    support: { href:'start.html?issue=ai', esHref:'es.html#diagnostico', en:'Discuss AI support', es:'Consultar soporte con IA' }
   };
   const updateFollowUp = key => {
     const option = followUp[key];

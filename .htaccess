@@ -1,4 +1,7 @@
 RewriteEngine On
+RewriteRule ^(contact|support)\.html$ /start.html [R=301,L,NC]
+RewriteRule ^(service|feature|faq|project)\.html$ /solutions.html [R=301,L,NC]
+RewriteRule ^(team|testimonial)\.html$ /about.html [R=301,L,NC]
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
